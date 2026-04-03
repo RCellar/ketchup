@@ -33,6 +33,10 @@ tags:
 - Sanitize: no spaces (use hyphens), cannot start with a number, lowercase
 - Skip tags on ephemeral replies (brief acknowledgments, one-liners)
 
+### Notebook Format
+
+When outputting to `--fmt notebook`, tags are stored in `metadata.ketchup.tags` (notebook-level JSON) instead of YAML frontmatter. The same sanitization rules apply. Individual cells use `cell.metadata.tags` for structural tags (`ketchup:generated`, `ketchup:section`, etc.) — these are not content tags and should not be confused with the report's topic tags.
+
 ## Common Mistakes
 
 | Mistake | Fix |

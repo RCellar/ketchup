@@ -17,6 +17,9 @@ Research and report on technologies, skills, or concepts, shaped for the reader'
 | `--time` | Integer (years) | Knowledge staleness — years since last deep engagement | `--time 6` |
 | `--registry` | Subcommand | Manage plugin registry: `list`, `add <name>`, `remove <name>` | `--registry list` |
 | `--reset` | Flag (no value) | Clear session state (occ, time, plugins) mid-conversation | `--reset` |
+| `--fmt` | String (`obsidian` \| `notebook`) | Output format — default `obsidian` | `--fmt notebook` |
+| `--kernel` | String (`python` \| `bash`) | Kernelspec for notebook code cells — default `python` | `--kernel bash` |
+| `--annotate` | File path (`.ipynb`) | Reprocess a ketchup notebook for `%%ketchup` queries | `--annotate ./report.ipynb` |
 
 ### Parsing Rules
 
@@ -30,7 +33,12 @@ Research and report on technologies, skills, or concepts, shaped for the reader'
 8. **`--time` validation** — Must be a non-negative integer (0-50 reasonable range). Reject negative numbers, decimals, and non-numeric values with: "Invalid --time value. Provide a whole number of years (e.g., `--time 6`)."
 9. **`--tgt` validation** — Must be a non-empty string. Reject empty/whitespace-only values: "No topic provided. Use `--tgt` with a topic string." If the value exceeds ~30 words, warn: "Topic is very broad — consider narrowing, or I'll scope it during decomposition."
 10. **`--plugin` replacement warning** — When `--plugin` on the CLI replaces a config-file plugin list, confirm what was replaced: "CLI `--plugin` overrides config. Using: {cli list}. Config had: {config list}. To use both, combine them: `--plugin 'Context7,Microsoft Docs'`."
-11. **`--reset`** — Clears session state (`--occ`, `--time`, active plugins) without restarting. Confirm: "Session state cleared. Set `--occ` to begin."
+11. **`--reset`** — Clears session state (`--occ`, `--time`, `--kernel`, active plugins) without restarting. Confirm: "Session state cleared. Set `--occ` to begin."
+12. **`--fmt` validation** — Accepts `obsidian` or `notebook`. Any other value: "Invalid `--fmt` value. Use `obsidian` or `notebook`." Default is `obsidian` if omitted.
+13. **`--kernel` validation** — Accepts `python` or `bash`. Any other value: "Invalid `--kernel` value. Use `python` or `bash`." Requires `--fmt notebook` — reject otherwise: "The `--kernel` flag requires `--fmt notebook`." Default is `python` if omitted.
+14. **`--annotate` validation** — Path must end in `.ipynb`: "The `--annotate` flag requires a `.ipynb` file path." Standalone mode — reject if combined with `--tgt`, `--occ`, `--fmt`, or `--kernel`: "The `--annotate` flag is a standalone mode — it inherits perspective and kernel from the notebook metadata."
+15. **`--fmt` not stored** — Like `--tgt`, `--fmt` is always per-invocation. Never stored in `.ketchup` config.
+16. **`--kernel` in config** — May be stored in `.ketchup` config under the `kernel` key. CLI `--kernel` overrides config.
 
 ## `.ketchup` Config File
 
@@ -44,11 +52,13 @@ Persistent defaults for `--occ`, `--plugin`, and `--time`. Users edit these file
 # ~/.ketchup (global defaults)
 occ: "Windows Systems Engineer"
 time: 6
+kernel: python
 plugins:
   - context7
 
 # <project>/.ketchup (project override)
 occ: "Cloud Infrastructure Engineer"
+kernel: bash
 plugins:
   - context7
   - microsoft-docs
@@ -66,12 +76,16 @@ plugins:
 - Omitting `--time` entirely (no CLI, no config) = assume current knowledge
 - Config `plugins` is a YAML list; `--plugin` is a comma-separated string. Both resolve to the same internal list.
 - `--tgt` is never stored — always per-invocation
+- `--kernel` defaults to `python` if absent from CLI and config
+- `--fmt` and `--annotate` are never stored — always per-invocation
 
 ### Behavior by flag combination
 
 ```mermaid
 flowchart LR
-    A[Parse args + load .ketchup] --> R{Has --registry?}
+    A[Parse args + load .ketchup] --> AN{Has --annotate?}
+    AN -->|yes| ANN[Load notebook metadata\nEnter annotation flow\n— see notebook-format.md]
+    AN -->|no| R{Has --registry?}
     R -->|yes| S[Execute registry subcommand\nand exit]
     R -->|no| B{Has --occ?}
     B -->|yes| C[Set session perspective]
@@ -83,6 +97,9 @@ flowchart LR
     C --> E{Has --tgt?}
     E -->|yes| H[Load --plugin + --time\nthen launch pipeline]
     E -->|no| I[Confirm perspective set]
+    H --> H4{--fmt notebook?}
+    H4 -->|yes| NB[Step 4: Notebook generation\n— see notebook-format.md]
+    H4 -->|no| OB[Step 4: Obsidian output\n— existing behavior]
 ```
 
 - **`--occ` only:** Set the session perspective. Confirm it. No report generated.
@@ -92,6 +109,9 @@ flowchart LR
 - **Neither flag, no config:** Display usage summary with examples. Prompt for at least `--occ`.
 - **Neither flag, config exists:** Load config defaults. Confirm: "Loaded defaults from {config path}: occ={occ}, plugins={list}, time={N}. Provide `--tgt` to generate a report."
 - **`--registry` flag:** Execute registry subcommand (list/add/remove) and exit. No research pipeline.
+- **`--annotate <path>`:** Standalone mode. Loads notebook metadata (perspective, staleness, plugins, topic) from the `.ipynb` file. Scans for `%%ketchup` query cells. Dispatches annotation agents. Inserts responses. See `notebook-format.md`.
+- **`--fmt notebook` (with `--tgt`):** Full research pipeline runs normally through Steps 1-3. Step 4 delegates to `notebook-format.md` for notebook generation instead of Obsidian output. Step 5 verification runs on the synthesized draft before format conversion.
+- **`--fmt obsidian` or omitted:** Existing behavior, unchanged.
 
 ## Session Perspective (`--occ` + `--time`)
 
@@ -172,6 +192,7 @@ Research uses two passes to control cost — cheap extraction first, then perspe
 | 1 | Fact extraction | **haiku** | facet + topic + plugin docs | Raw facts, sources, commands, comparisons (no perspective shaping) | Always — one per facet, parallelize all |
 | 2 | Perspective shaping | **sonnet** | Pass 1 output + occ + time | Shaped prose with vocabulary bridging, analogies, risk calibration | Always — one per facet, parallelize all |
 | 2 | Perspective shaping | **opus** | Pass 1 output + occ + time | Shaped prose (complex facets) | Only if facet covers >3 subtopics or cross-domain synthesis is required |
+| Annotate | Annotation response | **sonnet** | query + context cells + occ + time + plugin docs | Shaped prose response, 200-600 words | `--annotate` mode — one per `%%ketchup` query, parallelize all |
 
 **Pass 1 — Fact extraction (haiku, parallel, one per facet):**
 
@@ -250,11 +271,15 @@ Scan all facet outputs for bare assertions (factual claims with no `([source](ur
 
 1. **Check for contradictions** — Do any two facets make conflicting claims? Surface explicitly with `_(~inferred: sources conflict — see [section A] vs [section B])_`
 2. **Deduplicate** — Merge thematically overlapping content under one authoritative section. Restructure so each concept appears once in the most logical location.
-3. **Bridge gaps** — Add cross-references (Obsidian wikilinks where appropriate) between sections where one explains something another assumes.
+3. **Bridge gaps** — Add cross-references between sections where one explains something another assumes. Use Obsidian wikilinks (`[[Section Name]]`) for `--fmt obsidian`; use standard markdown links (`[Section Name](#section-name)`) for `--fmt notebook` (wikilinks don't render in Jupyter).
 4. **Restore perspective** — If the `--occ` framing got lost in raw research, restore it. Every section needs at least one element specifically shaped for the reader's occupation.
 5. **Shape the narrative** — Map synthesized content to the report template sections. The output of this step is a complete draft, not a content blob.
 
 ### Step 4: Format and output
+
+**Format selection:** If `--fmt notebook` is active, delegate to `notebook-format.md` for notebook generation. The synthesized draft from Step 3 is passed as input. Skip the remainder of this section (Obsidian-specific formatting). Step 5 verification still runs on the synthesized draft (before format conversion).
+
+**If `--fmt obsidian` or omitted (default):**
 
 **Before drafting:** Invoke `obsidian:obsidian-markdown` via the Skill tool to load Obsidian formatting conventions.
 
@@ -419,6 +444,11 @@ All ketchup outputs follow cite-and-tag rules defined in `cite-and-tag.md` in th
 | Doing verification inline during synthesis | Verification is a separate phase (Step 5) with its own haiku agent. |
 | "I'll use opus to be safe" | Opus costs 10-15x more. Only escalate per the dispatch table conditions. |
 | Re-researching in Pass 2 | Pass 2 reshapes Pass 1 output. It does NOT re-read sources or do web search. |
+| Using `--kernel` without `--fmt notebook` | `--kernel` only applies to notebook output. Reject with message. |
+| Combining `--annotate` with `--tgt` or `--occ` | `--annotate` is standalone. It inherits perspective from notebook metadata. |
+| Generating notebook with Obsidian callout syntax | Use HTML alert divs — Obsidian callouts don't render in Jupyter. See `notebook-format.md`. |
+| Wikilinks in notebook output | Wikilinks render as literal `[[text]]` in Jupyter. Use standard markdown links. |
+| Re-specifying `--occ` with `--annotate` | Not needed — perspective lives in the notebook's `metadata.ketchup`. |
 
 ## Examples
 
@@ -446,3 +476,15 @@ All ketchup outputs follow cite-and-tag rules defined in `cite-and-tag.md` in th
 /ketchup --registry list
 /ketchup --registry add "Kubernetes Docs" --global
 ```
+
+**Notebook output with bash kernel:**
+```
+/ketchup --occ "Linux Systems Administrator" --tgt "systemd Service Management" --fmt notebook --kernel bash
+```
+→ Full research pipeline, output as `.ipynb` with bash code cells for systemd commands.
+
+**Annotating an existing notebook:**
+```
+/ketchup --annotate ./vault/systemd-guide.ipynb
+```
+→ Reads perspective from notebook metadata. Finds `%%ketchup` query cells. Inserts shaped responses after each query.
