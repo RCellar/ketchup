@@ -65,6 +65,48 @@ This tells ketchup: *"I'm a Windows sysadmin who hasn't been deep in the weeds f
 | `--plugin` | MCP data sources for pre-fetch (comma-separated) | `--plugin "Context7"` |
 | `--time` | Years since your last deep engagement | `--time 6` |
 | `--registry` | Manage plugins: `list`, `add`, `remove` | `--registry list` |
+| `--fmt` | Output format: `obsidian` (default) or `notebook` | `--fmt notebook` |
+| `--kernel` | Kernelspec for notebook code cells: `python` or `bash` | `--kernel bash` |
+| `--annotate` | Reprocess a ketchup notebook for inline queries | `--annotate ./report.ipynb` |
+
+## Jupyter Notebook Output
+
+Ketchup can output directly to Jupyter notebooks with executable code cells — ideal for hands-on learning topics.
+
+```bash
+/ketchup --occ "Linux Enthusiast" --tgt "systemd Service Management" --fmt notebook --kernel bash
+```
+
+**What changes from Obsidian output:**
+
+| Obsidian | Notebook |
+|----------|----------|
+| YAML frontmatter | `metadata.ketchup` JSON namespace |
+| `> [!tip]` callouts | HTML `<div class="alert">` divs |
+| `[[wikilinks]]` | Standard markdown links |
+| Fenced code blocks | Executable code cells (when language matches `--kernel`) |
+| Static document | Runnable, annotatable document |
+
+### Annotating Notebooks
+
+After generating a notebook, you can ask follow-up questions directly inside it. Add a markdown cell anywhere with `%%ketchup` on the first line:
+
+```
+%%ketchup
+Expand on how SELinux booleans work — give me practical examples.
+```
+
+Then run:
+
+```bash
+/ketchup --annotate ./my-report.ipynb
+```
+
+Ketchup reads the perspective, plugins, and topic from the notebook's metadata (no need to re-specify `--occ`), dispatches a sonnet agent for each query, and inserts the response directly after the query cell.
+
+**Annotation index:** Each processed query is replaced with a compact marker (`*[Annotation #1](#ketchup-annotation-index)*`) and the full query text is preserved in cell metadata. An annotation index table is appended to the end of the notebook, rebuilt on every `--annotate` run.
+
+**Idempotency:** Answered queries are tagged `ketchup:query-answered` and skipped on re-runs. To re-ask, replace the marker with a new `%%ketchup` cell.
 
 ## How It Works
 
@@ -77,7 +119,7 @@ This tells ketchup: *"I'm a Windows sysadmin who hasn't been deep in the weeds f
 3. **Pass 1: Fact extraction (haiku)** — Cheap, fast agents collect raw facts, sources, and commands per facet via web search. No perspective shaping yet — just research.
 4. **Pass 2: Perspective shaping (sonnet)** — Each facet's raw research is reshaped for the reader's occupation and staleness window. No re-research — only reshaping Pass 1 output.
 5. **Validate & synthesize** — Citation audit, contradiction check, deduplicate, restore perspective across all sections
-6. **Obsidian output** — Formatted report with frontmatter, callouts, Mermaid diagrams, and proper tags
+6. **Format & output** — Obsidian markdown (default) or Jupyter notebook (`--fmt notebook`) with executable code cells, HTML callouts, and ketchup metadata
 7. **Verification (haiku)** — Independent agent checks frontmatter, section completeness, citation compliance, and confidence scoring before delivery
 
 ### Cost Discipline
@@ -90,6 +132,7 @@ Ketchup uses a two-pass research model to control agent costs:
 | 2 — Perspective shaping | **sonnet** | Reshape facts for the reader | Requires judgment — worth the cost |
 | 2 (complex facets) | **opus** | Cross-domain synthesis | Only when facet covers >3 subtopics |
 | Verification | **haiku** | Structural + citation checks | Mechanical validation — no judgment needed |
+| Annotation | **sonnet** | Answer `%%ketchup` queries in notebooks | Perspective shaping — one per query, parallel |
 
 A dispatch table in the skill file governs model selection. The orchestrator consults it before every agent call — no ad-hoc escalation.
 
@@ -170,6 +213,7 @@ Persist your defaults in a `.ketchup` YAML file so you don't have to type flags 
 # ~/.ketchup (global defaults)
 occ: "Windows Systems Engineer"
 time: 6
+kernel: python
 plugins:
   - context7
 ```
@@ -235,14 +279,23 @@ Citation compliance isn't just guidance — it's enforced at multiple stages of 
 3. **Step 3a validation** — the orchestrator checks citation density before synthesis; facets with zero sourced citations are flagged as low-confidence
 4. **Step 3b audit** — bare assertions are scanned for and either sourced, marked, or reframed before the final report is written
 
-## Output Format
+## Output Formats
 
-Reports are Obsidian-flavored markdown with:
+### Obsidian Markdown (default)
 
 - YAML frontmatter (`topic`, `perspective`, `date`, `confidence`, `source_count`, `tags`)
 - `> [!abstract]`, `> [!tip]`, `> [!warning]` callouts
 - Mermaid diagrams where helpful
 - Tags in frontmatter for proper Obsidian search and Dataview indexing
+
+### Jupyter Notebook (`--fmt notebook`)
+
+- `metadata.ketchup` JSON namespace (same fields as Obsidian frontmatter)
+- HTML alert divs instead of Obsidian callouts
+- Code blocks matching `--kernel` extracted into executable code cells
+- Standard markdown links instead of wikilinks
+- Mermaid diagrams preserved (JupyterLab 4.1+ renders natively)
+- Annotation support via `%%ketchup` inline queries
 
 ## File Structure
 
@@ -253,8 +306,9 @@ ketchup/
 │   └── marketplace.json     # Marketplace catalog
 ├── skills/
 │   └── ketchup/
-│       ├── SKILL.md          # Main skill definition
-│       ├── cite-and-tag.md   # Citation rules reference
+│       ├── SKILL.md              # Main skill definition
+│       ├── notebook-format.md    # Jupyter notebook generation & annotation
+│       ├── cite-and-tag.md       # Citation rules reference
 │       └── plugin-registry.yaml  # MCP plugin registry
 ├── assets/
 │   └── banner.svg
