@@ -1,10 +1,12 @@
 # Cite and Tag Reference
 
+Citation and tagging rules for ketchup report outputs.
+
 ## Citation Rules
 
 | Claim Type | Format |
 |---|---|
-| Verifiable fact with URL | Hyperlink inline: `"registers offset drafts ([source](url))"` |
+| Verifiable fact with URL | Hyperlink inline: `"claim ([source](url))"` |
 | Fact, no URL available | Append `_(unsourced)_` |
 | Probabilistic / inference claim | Append `_(~inferred: brief basis)_` |
 | URL not verified to resolve | Append `_(link unverified)_` |
@@ -14,20 +16,22 @@
 
 **Never use "intuition" to describe LLM reasoning.** Use "pattern-match," "aggregate likelihood," or "low-confidence extrapolation."
 
-## Tagging Format
+## Tagging (Obsidian Frontmatter)
 
-Close substantive messages with a blockquote tag line:
+All ketchup reports use **YAML frontmatter `tags:`** for tagging — not inline blockquotes.
 
+```yaml
+tags:
+  - ketchup
+  - selinux
+  - windows-sysadmin
 ```
-> #topic1 #topic2 #topic3
-```
 
-- Tags go at the end, after the message body
-- Use descriptive, searchable terms — not generic labels
-- Match vocabulary to how someone would query `history_search`
+**Rules:**
+- Tags live in frontmatter only — Obsidian's search and Dataview index these reliably
+- Use descriptive, searchable terms — not generic labels like `misc` or `general`
+- Sanitize: no spaces (use hyphens), cannot start with a number, lowercase
 - Skip tags on ephemeral replies (brief acknowledgments, one-liners)
-
-**Obsidian outputs:** When producing Obsidian markdown files, tags belong in the YAML frontmatter `tags:` list, NOT in a blockquote tag line. The blockquote format above is for chat/conversation history tagging only. Obsidian's search and Dataview index frontmatter tags reliably; blockquote tags are not indexed consistently. Sanitize tags: no spaces (use hyphens), cannot start with a number, lowercase.
 
 ## Common Mistakes
 
@@ -35,6 +39,6 @@ Close substantive messages with a blockquote tag line:
 |---|---|
 | Inference stated as bare fact | Add `_(~inferred: basis)_` |
 | "My intuition says..." | Replace with "pattern-match suggests..." or "low-confidence extrapolation:" |
-| Tagging every single message | Skip tags on ephemeral / one-line replies |
 | Vague tags like `#misc` or `#general` | Use specific, queryable terms |
-| URL linked without verifying it resolves | Verify or note _(link unverified)_ |
+| URL linked without verifying it resolves | Verify or note `_(link unverified)_` |
+| Tags in a blockquote at end of document | Move to YAML frontmatter `tags:` list |

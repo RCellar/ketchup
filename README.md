@@ -129,10 +129,11 @@ Plugins are opt-in MCP data sources that run at the pre-fetch layer. The orchest
 
 **Plugin registry files:**
 
-| File | Scope |
-|------|-------|
-| `skills/ketchup/plugin-registry.yaml` | Ships with ketchup (global defaults) |
-| `<project>/.ketchup-plugins.yaml` | Project-level additions/overrides |
+| File | Scope | Notes |
+|------|-------|-------|
+| `<project>/.ketchup-plugins.yaml` | Project-level overrides | User-editable |
+| `~/.ketchup-plugins.yaml` | User global additions | Written by `--registry add --global` |
+| `skills/ketchup/plugin-registry.yaml` | Shipped defaults | Read-only — overwritten on plugin update |
 
 ## Config
 
@@ -154,7 +155,7 @@ plugins:
   - microsoft-docs
 ```
 
-**Resolution order:** CLI flags > project `.ketchup` > global `~/.ketchup` > prompt user
+**Resolution order:** CLI flags > project `.ketchup` (walks up from cwd to git root or filesystem root) > global `~/.ketchup` > prompt user
 
 | Override | How |
 |----------|-----|

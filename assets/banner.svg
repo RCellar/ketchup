@@ -7,6 +7,9 @@
     <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
       <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(200,30,30,0.04)" stroke-width="1"/>
     </pattern>
+    <clipPath id="rounded">
+      <rect width="800" height="220" rx="8"/>
+    </clipPath>
   </defs>
 
   <!-- Background -->
@@ -16,11 +19,8 @@
   <!-- Border -->
   <rect x="0.5" y="0.5" width="799" height="219" rx="8" fill="none" stroke="#21262d" stroke-width="1"/>
 
-  <!-- Left accent line -->
-  <rect x="0" y="0" width="4" height="220" fill="url(#accent)" rx="0"/>
-  <!-- Fix top-left corner overlap -->
-  <rect x="0" y="0" width="8" height="8" fill="#0d1117"/>
-  <rect x="0" y="0" width="4" height="220" fill="url(#accent)"/>
+  <!-- Left accent line (clipped to rounded corners) -->
+  <rect x="0" y="0" width="4" height="220" fill="url(#accent)" clip-path="url(#rounded)"/>
 
   <!-- Meta line: install command -->
   <text x="50" y="62" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="11" font-weight="300" fill="#8b949e" letter-spacing="1">
