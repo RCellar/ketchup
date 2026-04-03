@@ -159,36 +159,39 @@ For each active plugin:
 
 Tag each plugin's results with its name for subagent citation.
 
-### Step 2: Dispatch parallel research agents
+### Step 2: Two-pass research with parallel agents
 
-Launch one agent per facet using the Agent tool with `model: "sonnet"`. Each agent receives:
+Research uses two passes to control cost — cheap extraction first, then perspective shaping.
 
-- The facet to research
-- The `--occ` context for perspective shaping
-- The `--time` staleness context (if set)
-- Pre-fetched plugin docs (if available from Step 1.5), tagged by plugin name
-- Full cite-and-tag rules
+**Dispatch table** — consult before every `Agent()` call:
 
-**Agent prompt template:**
+| Pass | Agent role | Model | Input | Output | Condition |
+|------|-----------|-------|-------|--------|-----------|
+| 1 | Fact extraction | **haiku** | facet + topic + plugin docs | Raw facts, sources, commands, comparisons (no perspective shaping) | Always — one per facet, parallelize all |
+| 2 | Perspective shaping | **sonnet** | Pass 1 output + occ + time | Shaped prose with vocabulary bridging, analogies, risk calibration | Always — one per facet, parallelize all |
+| 2 | Perspective shaping | **opus** | Pass 1 output + occ + time | Shaped prose (complex facets) | Only if facet covers >3 subtopics or cross-domain synthesis is required |
+
+**Pass 1 — Fact extraction (haiku, parallel, one per facet):**
+
+Each agent receives the facet, topic, and pre-fetched plugin docs. It does NOT receive `--occ` or `--time` — its job is raw research, not shaping.
 
 ```
-You are a research agent for the ketchup skill. Your task:
+You are a fact-extraction agent. Your task:
 
 FACET: {facet_description}
-READER OCCUPATION: {occ_value}
 TARGET TOPIC: {tgt_value}
-{If --time is set:}
-KNOWLEDGE STALENESS: The reader's last deep technical engagement was {time} years ago.
-Bridge from tools/patterns current in {current_year - time}. Explicitly flag what
-has changed since then. Do not assume familiarity with anything that emerged in the
-last {time} years.
 
 {If plugin docs were pre-fetched for this facet:}
 PREFETCHED DOCUMENTATION ({plugin_name}):
 {results}
-Use this as an authoritative source for factual claims. Cite as ({plugin_name}).
+Use this as an authoritative source. Cite as ({plugin_name}).
 
-Research this facet thoroughly using web search.
+Research this facet using web search. Collect:
+- Key facts, definitions, and concepts
+- Commands, configurations, and code examples
+- Comparisons to related technologies
+- Common pitfalls and failure modes
+- Version history and recent changes
 
 CITATION RULES (mandatory — apply to EVERY factual claim):
 - Verifiable fact with URL → hyperlink inline: "claim ([source](url))"
@@ -199,12 +202,34 @@ CITATION RULES (mandatory — apply to EVERY factual claim):
 - If you cannot verify a URL resolves, note _(link unverified)_
 - If web search returns nothing useful for a claim, flag it explicitly — do NOT silently fall back to training data
 
-OUTPUT FORMAT:
-- Target 600-800 words for this facet — depth over breadth
-- Shape explanations for a reader who is a {occ_value}
-- Include concrete examples, commands, or configurations where relevant
-- Do NOT repeat foundational concepts that other facets will cover
-- End with: (a) list of sources used, (b) self-reported citation count: "X sourced, Y unsourced, Z inferred"
+OUTPUT: Structured facts, 400-600 words. End with: (a) sources used, (b) citation count: "X sourced, Y unsourced, Z inferred"
+```
+
+**Pass 2 — Perspective shaping (sonnet, parallel, one per facet):**
+
+Each agent receives the Pass 1 output plus the occupation and staleness context. It does NOT re-research — it reshapes existing facts for the reader.
+
+```
+You are a perspective-shaping agent. Your task:
+
+PASS 1 RESEARCH (use as your primary source — do not re-research):
+{pass_1_output}
+
+READER OCCUPATION: {occ_value}
+{If --time is set:}
+KNOWLEDGE STALENESS: The reader's last deep technical engagement was {time} years ago.
+Bridge from tools/patterns current in {current_year - time}. Explicitly flag what
+has changed since then. Do not assume familiarity with anything that emerged in the
+last {time} years.
+
+Reshape the research for this reader:
+- Map concepts to equivalents they already know from their occupation
+- Add analogies, comparisons, and "in your world, this is like..." framing
+- Calibrate risk warnings to their operational context
+- Flag misconceptions their background likely creates
+- Preserve all citations from Pass 1 exactly as written
+
+OUTPUT: 600-800 words of shaped prose. Preserve all citation markers. Do not fabricate new factual claims beyond what Pass 1 provided.
 ```
 
 ### Step 3: Validate and synthesize
@@ -296,6 +321,33 @@ tags:
 
 Note: The `date` field must be substituted with the actual current date in ISO 8601 format (e.g., `2026-04-03`), not a placeholder string.
 
+### Step 5: Verification (separate phase, haiku agent)
+
+Do NOT embed verification into Step 4. Dispatch a **haiku** agent after the report is drafted to verify independently:
+
+```
+You are a verification agent. Check the following report for structural and citation integrity.
+
+REPORT:
+{draft_report}
+
+Check:
+1. FRONTMATTER: All required fields present (topic, perspective, date, confidence, source_count, tags). Date is ISO 8601 (not a placeholder). Tags are lowercase, hyphenated, no leading numbers. source_count matches actual count.
+2. SECTIONS: All template sections present (TL;DR, Why This Matters, What This Is NOT, Core Concepts, Quick Reference, Gotchas, Further Reading).
+3. CITATIONS: Scan every factual sentence. Flag any bare assertions (no URL, no _(unsourced)_, no _(~inferred:...)_ marker). List line numbers.
+4. LINKS: If any wikilinks ([[...]]) are used, verify they reference sections that exist in this document.
+5. CONFIDENCE: Count sourced vs unsourced vs inferred claims. Report: "X sourced, Y unsourced, Z inferred → confidence: high|medium|low"
+
+Confidence thresholds:
+- high: >70% sourced claims
+- medium: 40-70% sourced claims
+- low: <40% sourced claims
+
+Report: PASS (all checks green) or FAIL with specific issues listed.
+```
+
+If verification returns FAIL, fix the specific issues before delivering to the user. Do not re-run the full pipeline — patch the draft directly.
+
 ## Plugin Registry
 
 Plugins are registered in YAML files mapping friendly names to MCP tool workflows.
@@ -358,6 +410,11 @@ All ketchup outputs follow cite-and-tag rules defined in `cite-and-tag.md` in th
 | Forcing 6 facets on a narrow topic | Narrow topics get 1-2 deep facets. Don't pad. |
 | Running plugins without `--plugin` or config | Plugins are strictly opt-in. No prefetch without explicit request. |
 | Ignoring `--time` in subagent prompts | Always include staleness context when set. It shapes everything. |
+| Using sonnet/opus for fact extraction | Pass 1 is mechanical — use haiku. Reserve sonnet for perspective shaping. |
+| Skipping the dispatch table | Check the table before every `Agent()` call. Don't ad-hoc model selection. |
+| Doing verification inline during synthesis | Verification is a separate phase (Step 5) with its own haiku agent. |
+| "I'll use opus to be safe" | Opus costs 10-15x more. Only escalate per the dispatch table conditions. |
+| Re-researching in Pass 2 | Pass 2 reshapes Pass 1 output. It does NOT re-read sources or do web search. |
 
 ## Examples
 
