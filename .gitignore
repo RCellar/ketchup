@@ -11,5 +11,8 @@ Thumbs.db
 .ketchup-plugins.yaml
 .ketchup
 
+# Vault (test artifacts and Obsidian state)
+vault/
+
 # Internal docs
 docs/
