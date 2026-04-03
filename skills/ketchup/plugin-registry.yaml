@@ -1,0 +1,20 @@
+plugins:
+  context7:
+    match: "context7"
+    description: "Current documentation for libraries, frameworks, and SDKs"
+    workflow:
+      - tool: "mcp__plugin_context7_context7__resolve-library-id"
+        action: "Resolve topic to library ID"
+      - tool: "mcp__plugin_context7_context7__query-docs"
+        action: "Query per-facet with focused strings"
+
+  microsoft-docs:
+    match: "microsoft"
+    description: "Official Microsoft and Azure documentation"
+    workflow:
+      - tool: "mcp__plugin_microsoft-docs_microsoft-learn__microsoft_docs_search"
+        action: "Search topic"
+      - tool: "mcp__plugin_microsoft-docs_microsoft-learn__microsoft_docs_fetch"
+        action: "Fetch top results for depth"
+      - tool: "mcp__plugin_microsoft-docs_microsoft-learn__microsoft_code_sample_search"
+        action: "Search code samples if topic involves code"

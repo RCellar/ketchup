@@ -1,0 +1,19 @@
+{
+  "name": "ketchup",
+  "description": "Perspective-shaped technical research — catch up on unfamiliar tools and technologies with reports tailored to your professional background",
+  "version": "1.0.0",
+  "author": {
+    "name": "dmickles"
+  },
+  "repository": "https://github.com/dmickles/ketchup",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "learning",
+    "documentation",
+    "obsidian",
+    "perspective",
+    "technical-writing",
+    "mcp-plugins"
+  ]
+}
