@@ -23,35 +23,35 @@
   <rect x="0" y="0" width="4" height="220" fill="url(#accent)"/>
 
   <!-- Meta line: install command -->
-  <text x="50" y="62" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="11" font-weight="300" fill="#484f58" letter-spacing="1">
+  <text x="50" y="62" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="11" font-weight="300" fill="#8b949e" letter-spacing="1">
     <tspan fill="#cc2200">$</tspan> claude install-skill github:RCellar/ketchup
   </text>
 
   <!-- Title -->
-  <text x="50" y="120" font-family="'Instrument Serif', 'Georgia', 'Times New Roman', serif" font-size="58" font-weight="400" fill="#e6edf3" letter-spacing="-0.5">
+  <text x="50" y="120" font-family="'Instrument Serif', 'Georgia', 'Times New Roman', serif" font-size="58" font-weight="400" fill="#f0f6fc" letter-spacing="-0.5">
     <tspan font-style="italic" fill="#cc3322">ketchup</tspan>
   </text>
 
   <!-- Description -->
-  <text x="50" y="148" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="13" font-weight="300" fill="#7d8590">
+  <text x="50" y="148" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="13" font-weight="300" fill="#c9d1d9">
     Perspective-shaped technical research.
   </text>
-  <text x="50" y="168" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="13" font-weight="300" fill="#7d8590">
+  <text x="50" y="168" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="13" font-weight="300" fill="#c9d1d9">
     Ketchup on anything, like it should be.
   </text>
 
   <!-- Right column stats -->
-  <text x="760" y="62" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#484f58" text-anchor="end">
-    <tspan font-weight="500" fill="#7d8590">5</tspan> perspective lenses
+  <text x="760" y="62" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#8b949e" text-anchor="end">
+    <tspan font-weight="500" fill="#c9d1d9">5</tspan> perspective lenses
   </text>
-  <text x="760" y="82" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#484f58" text-anchor="end">
-    <tspan font-weight="500" fill="#7d8590">MCP</tspan> plugin prefetch
+  <text x="760" y="82" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#8b949e" text-anchor="end">
+    <tspan font-weight="500" fill="#c9d1d9">MCP</tspan> plugin prefetch
   </text>
-  <text x="760" y="102" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#484f58" text-anchor="end">
-    <tspan font-weight="500" fill="#7d8590">Obsidian</tspan> output
+  <text x="760" y="102" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#8b949e" text-anchor="end">
+    <tspan font-weight="500" fill="#c9d1d9">Obsidian</tspan> output
   </text>
-  <text x="760" y="122" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#484f58" text-anchor="end">
-    <tspan font-weight="500" fill="#7d8590">Parallel</tspan> research agents
+  <text x="760" y="122" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#8b949e" text-anchor="end">
+    <tspan font-weight="500" fill="#c9d1d9">Parallel</tspan> research agents
   </text>
 
   <!-- Version badge -->
