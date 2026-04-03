@@ -196,30 +196,58 @@ For section expansions, use ## or ### headings as appropriate.
 For code examples, use fenced code blocks with language tags.
 ~~~
 
-### Step 5: Insert Responses
+### Step 5: Insert Responses and Update Annotation Index
 
 Process query cells in **reverse index order** (highest index first) to preserve cell positions during insertion.
 
+Maintain a running annotation counter `N` starting from the highest existing annotation number in the notebook (scan for `ketchup:annotation-marker` cells and extract their number), or 1 if none exist.
+
 For each query cell at index `i`:
 
-1. **Tag the query cell:** Add `ketchup:query-answered` to `cell.metadata.tags` (create the `tags` array if it doesn't exist)
+1. **Replace the query cell with a marker:** Replace the `%%ketchup` cell's source with a compact reference:
+   ```
+   *[Annotation #N](#ketchup-annotation-index) — "{first 60 characters of query}..."*
+   ```
+   Set the marker cell's tags to `ketchup:query-answered` and `ketchup:annotation-marker`. Store the full original query text in `cell.metadata.ketchup.original_query` and the annotation number in `cell.metadata.ketchup.annotation_number`.
 
 2. **Translate the response:** Determine the kernel from the notebook's `metadata.kernelspec.name`. Apply the same translation rules as notebook generation:
    - Prose → markdown cell(s)
    - Code blocks matching kernel → code cells
    - Callouts → HTML alert divs
 
-3. **Insert after the query cell:** Insert the translated cell(s) at index `i + 1`. Tag each with `ketchup:response` and `ketchup:generated`.
+3. **Insert after the marker cell:** Insert the translated cell(s) at index `i + 1`. Tag each with `ketchup:response` and `ketchup:generated`. Store `annotation_number` in each response cell's `cell.metadata.ketchup.annotation_number`.
 
 4. **Generate cell IDs:** Each inserted cell gets a unique 8-character alphanumeric `id`, checked against all existing IDs in the notebook.
 
+5. **Increment** `N` for the next query.
+
+**After all queries are processed, update the Annotation Index:**
+
+Scan the notebook for an existing cell tagged `ketchup:annotation-index`. If found, replace its source. If not found, append a new markdown cell at the end of the notebook.
+
+The annotation index cell contains:
+
+```markdown
+## Annotation Index
+<a id="ketchup-annotation-index"></a>
+
+| # | Original Query | Date |
+|---|---------------|------|
+| 1 | First 80 chars of query... | 2026-04-03 |
+| 2 | First 80 chars of query... | 2026-04-03 |
+```
+
+Tag the index cell with `ketchup:generated` and `ketchup:annotation-index`.
+
+Build the table by scanning all `ketchup:annotation-marker` cells in the notebook (not just the ones processed in this run — include previously answered annotations too). Read the full query from `cell.metadata.ketchup.original_query` and the number from `cell.metadata.ketchup.annotation_number`.
+
 ### Step 6: Write and Confirm
 
-Write the modified notebook back to the same file path. Confirm: "Annotated {N} queries in {path}."
+Write the modified notebook back to the same file path. Confirm: "Annotated {N} queries in {path}. Annotation index updated."
 
 ### Idempotency
 
-- `ketchup:query-answered` cells are skipped on subsequent `--annotate` runs
-- To re-ask a question: remove `ketchup:query-answered` from the cell's tags, or create a new `%%ketchup` cell
-- Previous response cells are left in place — they are ordinary markdown/code cells
+- `ketchup:query-answered` cells (annotation markers) are skipped on subsequent `--annotate` runs
+- To re-ask a question: replace the marker cell's source with a new `%%ketchup` query and remove `ketchup:query-answered` from its tags. The previous response cells remain in place below it.
 - Running `--annotate` on a notebook with no unanswered queries is a no-op with a message
+- The annotation index is rebuilt from all marker cells on every run, so it stays in sync even if markers are manually edited
