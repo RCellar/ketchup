@@ -196,10 +196,6 @@ ketchup/
 │       ├── SKILL.md          # Main skill definition
 │       ├── cite-and-tag.md   # Citation rules reference
 │       └── plugin-registry.yaml  # MCP plugin registry
-├── docs/
-│   └── superpowers/
-│       ├── specs/            # Design specs
-│       └── plans/            # Implementation plans
 ├── assets/
 │   └── banner.svg
 ├── LICENSE

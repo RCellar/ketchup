@@ -10,3 +10,6 @@ Thumbs.db
 # Runtime
 .ketchup-plugins.yaml
 .ketchup
+
+# Internal docs
+docs/
