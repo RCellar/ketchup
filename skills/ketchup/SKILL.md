@@ -79,7 +79,9 @@ plugins:
 
 ```mermaid
 flowchart LR
-    A[Parse args + load .ketchup] --> R{Has --registry?}
+    A[Parse args + load .ketchup] --> AN{Has --annotate?}
+    AN -->|yes| ANN[Load notebook metadata\nEnter annotation flow\n— see notebook-format.md]
+    AN -->|no| R{Has --registry?}
     R -->|yes| S[Execute registry subcommand\nand exit]
     R -->|no| B{Has --occ?}
     B -->|yes| C[Set session perspective]
@@ -91,6 +93,9 @@ flowchart LR
     C --> E{Has --tgt?}
     E -->|yes| H[Load --plugin + --time\nthen launch pipeline]
     E -->|no| I[Confirm perspective set]
+    H --> H4{--fmt notebook?}
+    H4 -->|yes| NB[Step 4: Notebook generation\n— see notebook-format.md]
+    H4 -->|no| OB[Step 4: Obsidian output\n— existing behavior]
 ```
 
 - **`--occ` only:** Set the session perspective. Confirm it. No report generated.
@@ -100,6 +105,9 @@ flowchart LR
 - **Neither flag, no config:** Display usage summary with examples. Prompt for at least `--occ`.
 - **Neither flag, config exists:** Load config defaults. Confirm: "Loaded defaults from {config path}: occ={occ}, plugins={list}, time={N}. Provide `--tgt` to generate a report."
 - **`--registry` flag:** Execute registry subcommand (list/add/remove) and exit. No research pipeline.
+- **`--annotate <path>`:** Standalone mode. Loads notebook metadata (perspective, staleness, plugins, topic) from the `.ipynb` file. Scans for `%%ketchup` query cells. Dispatches annotation agents. Inserts responses. See `notebook-format.md`.
+- **`--fmt notebook` (with `--tgt`):** Full research pipeline runs normally through Steps 1-3. Step 4 delegates to `notebook-format.md` for notebook generation instead of Obsidian output. Step 5 verification runs on the synthesized draft before format conversion.
+- **`--fmt obsidian` or omitted:** Existing behavior, unchanged.
 
 ## Session Perspective (`--occ` + `--time`)
 
