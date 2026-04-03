@@ -52,11 +52,13 @@ Persistent defaults for `--occ`, `--plugin`, and `--time`. Users edit these file
 # ~/.ketchup (global defaults)
 occ: "Windows Systems Engineer"
 time: 6
+kernel: python
 plugins:
   - context7
 
 # <project>/.ketchup (project override)
 occ: "Cloud Infrastructure Engineer"
+kernel: bash
 plugins:
   - context7
   - microsoft-docs
@@ -74,6 +76,8 @@ plugins:
 - Omitting `--time` entirely (no CLI, no config) = assume current knowledge
 - Config `plugins` is a YAML list; `--plugin` is a comma-separated string. Both resolve to the same internal list.
 - `--tgt` is never stored — always per-invocation
+- `--kernel` defaults to `python` if absent from CLI and config
+- `--fmt` and `--annotate` are never stored — always per-invocation
 
 ### Behavior by flag combination
 
@@ -188,6 +192,7 @@ Research uses two passes to control cost — cheap extraction first, then perspe
 | 1 | Fact extraction | **haiku** | facet + topic + plugin docs | Raw facts, sources, commands, comparisons (no perspective shaping) | Always — one per facet, parallelize all |
 | 2 | Perspective shaping | **sonnet** | Pass 1 output + occ + time | Shaped prose with vocabulary bridging, analogies, risk calibration | Always — one per facet, parallelize all |
 | 2 | Perspective shaping | **opus** | Pass 1 output + occ + time | Shaped prose (complex facets) | Only if facet covers >3 subtopics or cross-domain synthesis is required |
+| Annotate | Annotation response | **sonnet** | query + context cells + occ + time + plugin docs | Shaped prose response, 200-600 words | `--annotate` mode — one per `%%ketchup` query, parallelize all |
 
 **Pass 1 — Fact extraction (haiku, parallel, one per facet):**
 
@@ -266,11 +271,15 @@ Scan all facet outputs for bare assertions (factual claims with no `([source](ur
 
 1. **Check for contradictions** — Do any two facets make conflicting claims? Surface explicitly with `_(~inferred: sources conflict — see [section A] vs [section B])_`
 2. **Deduplicate** — Merge thematically overlapping content under one authoritative section. Restructure so each concept appears once in the most logical location.
-3. **Bridge gaps** — Add cross-references (Obsidian wikilinks where appropriate) between sections where one explains something another assumes.
+3. **Bridge gaps** — Add cross-references between sections where one explains something another assumes. Use Obsidian wikilinks (`[[Section Name]]`) for `--fmt obsidian`; use standard markdown links (`[Section Name](#section-name)`) for `--fmt notebook` (wikilinks don't render in Jupyter).
 4. **Restore perspective** — If the `--occ` framing got lost in raw research, restore it. Every section needs at least one element specifically shaped for the reader's occupation.
 5. **Shape the narrative** — Map synthesized content to the report template sections. The output of this step is a complete draft, not a content blob.
 
 ### Step 4: Format and output
+
+**Format selection:** If `--fmt notebook` is active, delegate to `notebook-format.md` for notebook generation. The synthesized draft from Step 3 is passed as input. Skip the remainder of this section (Obsidian-specific formatting). Step 5 verification still runs on the synthesized draft (before format conversion).
+
+**If `--fmt obsidian` or omitted (default):**
 
 **Before drafting:** Invoke `obsidian:obsidian-markdown` via the Skill tool to load Obsidian formatting conventions.
 
@@ -435,6 +444,11 @@ All ketchup outputs follow cite-and-tag rules defined in `cite-and-tag.md` in th
 | Doing verification inline during synthesis | Verification is a separate phase (Step 5) with its own haiku agent. |
 | "I'll use opus to be safe" | Opus costs 10-15x more. Only escalate per the dispatch table conditions. |
 | Re-researching in Pass 2 | Pass 2 reshapes Pass 1 output. It does NOT re-read sources or do web search. |
+| Using `--kernel` without `--fmt notebook` | `--kernel` only applies to notebook output. Reject with message. |
+| Combining `--annotate` with `--tgt` or `--occ` | `--annotate` is standalone. It inherits perspective from notebook metadata. |
+| Generating notebook with Obsidian callout syntax | Use HTML alert divs — Obsidian callouts don't render in Jupyter. See `notebook-format.md`. |
+| Wikilinks in notebook output | Wikilinks render as literal `[[text]]` in Jupyter. Use standard markdown links. |
+| Re-specifying `--occ` with `--annotate` | Not needed — perspective lives in the notebook's `metadata.ketchup`. |
 
 ## Examples
 
@@ -462,3 +476,15 @@ All ketchup outputs follow cite-and-tag rules defined in `cite-and-tag.md` in th
 /ketchup --registry list
 /ketchup --registry add "Kubernetes Docs" --global
 ```
+
+**Notebook output with bash kernel:**
+```
+/ketchup --occ "Linux Systems Administrator" --tgt "systemd Service Management" --fmt notebook --kernel bash
+```
+→ Full research pipeline, output as `.ipynb` with bash code cells for systemd commands.
+
+**Annotating an existing notebook:**
+```
+/ketchup --annotate ./vault/systemd-guide.ipynb
+```
+→ Reads perspective from notebook metadata. Finds `%%ketchup` query cells. Inserts shaped responses after each query.
