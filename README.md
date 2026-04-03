@@ -20,9 +20,19 @@
 
 ## Install
 
-```bash
-claude install-skill github:RCellar/ketchup
+**Step 1:** Add the marketplace (one-time setup):
+
 ```
+/plugin marketplace add RCellar/ketchup
+```
+
+**Step 2:** Install the plugin:
+
+```
+/plugin install ketchup@rcellar-ketchup
+```
+
+Then run `/reload-plugins` to activate. Skills are namespaced as `/ketchup:<skill>`.
 
 ## Quick Start
 
@@ -179,7 +189,8 @@ Reports are Obsidian-flavored markdown with:
 ```
 ketchup/
 ├── .claude-plugin/
-│   └── plugin.json          # Plugin metadata
+│   ├── plugin.json          # Plugin metadata
+│   └── marketplace.json     # Marketplace catalog
 ├── skills/
 │   └── ketchup/
 │       ├── SKILL.md          # Main skill definition

@@ -1,0 +1,17 @@
+{
+  "name": "rcellar-ketchup",
+  "owner": {
+    "name": "RCellar"
+  },
+  "metadata": {
+    "description": "Perspective-shaped technical research skill for Claude Code"
+  },
+  "plugins": [
+    {
+      "name": "ketchup",
+      "source": "./",
+      "description": "Perspective-shaped technical research — catch up on unfamiliar tools and technologies with reports tailored to your professional background",
+      "version": "1.0.0"
+    }
+  ]
+}
