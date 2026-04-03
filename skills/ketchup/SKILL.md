@@ -36,7 +36,7 @@ Research and report on technologies, skills, or concepts, shaped for the reader'
 11. **`--reset`** — Clears session state (`--occ`, `--time`, active plugins) without restarting. Confirm: "Session state cleared. Set `--occ` to begin."
 12. **`--fmt` validation** — Accepts `obsidian` or `notebook`. Any other value: "Invalid `--fmt` value. Use `obsidian` or `notebook`." Default is `obsidian` if omitted.
 13. **`--kernel` validation** — Accepts `python` or `bash`. Any other value: "Invalid `--kernel` value. Use `python` or `bash`." Requires `--fmt notebook` — reject otherwise: "The `--kernel` flag requires `--fmt notebook`." Default is `python` if omitted.
-14. **`--annotate` validation** — Path must end in `.ipynb`: "The `--annotate` flag requires a `.ipynb` file path." Standalone mode — reject if combined with `--tgt` or `--occ`: "The `--annotate` flag is a standalone mode — do not combine with `--tgt` or `--occ`."
+14. **`--annotate` validation** — Path must end in `.ipynb`: "The `--annotate` flag requires a `.ipynb` file path." Standalone mode — reject if combined with `--tgt`, `--occ`, `--fmt`, or `--kernel`: "The `--annotate` flag is a standalone mode — it inherits perspective and kernel from the notebook metadata."
 15. **`--fmt` not stored** — Like `--tgt`, `--fmt` is always per-invocation. Never stored in `.ketchup` config.
 16. **`--kernel` in config** — May be stored in `.ketchup` config under the `kernel` key. CLI `--kernel` overrides config.
 

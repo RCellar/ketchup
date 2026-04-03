@@ -133,7 +133,7 @@ Confirm loaded context: "Loaded from notebook: perspective={perspective} | stale
 
 ### Step 2: Scan for Query Cells
 
-Walk all cells in order. A query cell is any cell whose `source` starts with `%%ketchup\n`. Everything after that first line is the query text. The cell type (markdown or code) does not matter — only the `%%ketchup` prefix.
+Walk all cells in order. A query cell is any cell whose `source` starts with `%%ketchup\n`. Everything after that first line is the query text. The cell type (markdown or code) does not matter — only the `%%ketchup` prefix. If `source` is an array (older nbformat convention), join into a single string before checking.
 
 Skip cells already tagged `ketchup:query-answered` in their `cell.metadata.tags`.
 
@@ -204,7 +204,7 @@ For each query cell at index `i`:
 
 1. **Tag the query cell:** Add `ketchup:query-answered` to `cell.metadata.tags` (create the `tags` array if it doesn't exist)
 
-2. **Translate the response:** Apply the same translation rules as notebook generation:
+2. **Translate the response:** Determine the kernel from the notebook's `metadata.kernelspec.name`. Apply the same translation rules as notebook generation:
    - Prose → markdown cell(s)
    - Code blocks matching kernel → code cells
    - Callouts → HTML alert divs
