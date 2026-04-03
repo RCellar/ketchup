@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Catch up on anything. From where you stand.</strong><br/>
+  <strong>Ketchup on anything, like it should be.</strong><br/>
   A Claude Code skill that generates in-depth technical research reports<br/>
   shaped for your professional background.
 </p>
@@ -21,7 +21,7 @@
 ## Install
 
 ```bash
-claude install-skill github:dmickles/ketchup
+claude install-skill github:RCellar/ketchup
 ```
 
 ## Quick Start
@@ -44,7 +44,7 @@ That's it. Ketchup decomposes the topic into facets, dispatches parallel researc
 /ketchup --occ "Windows Systems Engineer" --tgt "SELinux Administration" --plugin "Context7" --time 6
 ```
 
-This tells ketchup: *"I'm a Windows sysadmin who hasn't been deep in the weeds for 6 years. Use Context7 docs. Catch me up on SELinux."*
+This tells ketchup: *"I'm a Windows sysadmin who hasn't been deep in the weeds for 6 years. Use Context7 docs. Ketchup me on SELinux."*
 
 ## Flags
 

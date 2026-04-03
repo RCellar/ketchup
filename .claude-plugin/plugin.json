@@ -3,9 +3,9 @@
   "description": "Perspective-shaped technical research — catch up on unfamiliar tools and technologies with reports tailored to your professional background",
   "version": "1.0.0",
   "author": {
-    "name": "dmickles"
+    "name": "RCellar"
   },
-  "repository": "https://github.com/dmickles/ketchup",
+  "repository": "https://github.com/RCellar/ketchup",
   "license": "MIT",
   "keywords": [
     "research",

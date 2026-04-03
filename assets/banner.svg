@@ -1,70 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#8B0000;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#CC0000;stop-opacity:1" />
+    <linearGradient id="accent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cc2200"/>
+      <stop offset="100%" stop-color="#881100"/>
     </linearGradient>
-    <linearGradient id="bottle" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#A00000;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#700000;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="label" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#F5F0E0;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#E8E0C8;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="cap" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#333333;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1" />
-    </linearGradient>
-    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
-      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="#00000040"/>
-    </filter>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(200,30,30,0.04)" stroke-width="1"/>
+    </pattern>
   </defs>
 
   <!-- Background -->
-  <rect width="800" height="200" rx="12" fill="url(#bg)"/>
+  <rect width="800" height="220" rx="8" fill="#0d1117"/>
+  <rect width="800" height="220" rx="8" fill="url(#grid)"/>
 
-  <!-- Subtle pattern overlay -->
-  <g opacity="0.05">
-    <circle cx="50" cy="30" r="80" fill="white"/>
-    <circle cx="750" cy="170" r="100" fill="white"/>
-    <circle cx="400" cy="0" r="60" fill="white"/>
-  </g>
+  <!-- Border -->
+  <rect x="0.5" y="0.5" width="799" height="219" rx="8" fill="none" stroke="#21262d" stroke-width="1"/>
 
-  <!-- Ketchup bottle -->
-  <g transform="translate(80, 20)" filter="url(#shadow)">
-    <!-- Bottle body -->
-    <path d="M25,60 Q15,60 12,70 L8,140 Q6,158 25,160 L55,160 Q74,158 72,140 L68,70 Q65,60 55,60 Z" fill="url(#bottle)" stroke="#600000" stroke-width="1"/>
-    <!-- Bottle neck -->
-    <rect x="30" y="30" width="20" height="32" rx="2" fill="url(#bottle)" stroke="#600000" stroke-width="1"/>
-    <!-- Cap -->
-    <rect x="28" y="18" width="24" height="14" rx="3" fill="url(#cap)"/>
-    <rect x="35" y="12" width="10" height="8" rx="5" fill="url(#cap)"/>
-    <!-- Label -->
-    <rect x="16" y="80" width="48" height="55" rx="4" fill="url(#label)"/>
-    <text x="40" y="102" font-family="Georgia, serif" font-size="9" font-weight="bold" fill="#8B0000" text-anchor="middle">FANCY</text>
-    <text x="40" y="118" font-family="Georgia, serif" font-size="11" font-weight="bold" fill="#8B0000" text-anchor="middle">KETCHUP</text>
-    <text x="40" y="130" font-family="Georgia, serif" font-size="6" fill="#8B0000" text-anchor="middle">EST. 2026</text>
-    <!-- Drip -->
-    <path d="M36,18 Q34,8 38,2 Q42,8 40,18" fill="#CC0000" opacity="0.8"/>
-  </g>
+  <!-- Left accent line -->
+  <rect x="0" y="0" width="4" height="220" fill="url(#accent)" rx="0"/>
+  <!-- Fix top-left corner overlap -->
+  <rect x="0" y="0" width="8" height="8" fill="#0d1117"/>
+  <rect x="0" y="0" width="4" height="220" fill="url(#accent)"/>
 
-  <!-- Title text -->
-  <text x="220" y="85" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="bold" fill="#FFFFFF" letter-spacing="2">ketchup</text>
-  <text x="222" y="118" font-family="'Courier New', monospace" font-size="18" fill="#FFD4D4" letter-spacing="1">Perspective-Shaped Technical Research</text>
+  <!-- Meta line: install command -->
+  <text x="50" y="62" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="11" font-weight="300" fill="#484f58" letter-spacing="1">
+    <tspan fill="#cc2200">$</tspan> claude install-skill github:RCellar/ketchup
+  </text>
 
-  <!-- Tagline -->
-  <text x="222" y="155" font-family="'Courier New', monospace" font-size="13" fill="#FF9999">Catch up on anything. From where you stand.</text>
+  <!-- Title -->
+  <text x="50" y="120" font-family="'Instrument Serif', 'Georgia', 'Times New Roman', serif" font-size="58" font-weight="400" fill="#e6edf3" letter-spacing="-0.5">
+    <tspan font-style="italic" fill="#cc3322">ketchup</tspan>
+  </text>
+
+  <!-- Description -->
+  <text x="50" y="148" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="13" font-weight="300" fill="#7d8590">
+    Perspective-shaped technical research.
+  </text>
+  <text x="50" y="168" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="13" font-weight="300" fill="#7d8590">
+    Ketchup on anything, like it should be.
+  </text>
+
+  <!-- Right column stats -->
+  <text x="760" y="62" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#484f58" text-anchor="end">
+    <tspan font-weight="500" fill="#7d8590">5</tspan> perspective lenses
+  </text>
+  <text x="760" y="82" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#484f58" text-anchor="end">
+    <tspan font-weight="500" fill="#7d8590">MCP</tspan> plugin prefetch
+  </text>
+  <text x="760" y="102" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#484f58" text-anchor="end">
+    <tspan font-weight="500" fill="#7d8590">Obsidian</tspan> output
+  </text>
+  <text x="760" y="122" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="10" fill="#484f58" text-anchor="end">
+    <tspan font-weight="500" fill="#7d8590">Parallel</tspan> research agents
+  </text>
 
   <!-- Version badge -->
-  <g transform="translate(660, 155)">
-    <rect width="80" height="24" rx="12" fill="#00000040"/>
-    <text x="40" y="16" font-family="'Courier New', monospace" font-size="11" fill="#FFD4D4" text-anchor="middle">v1.0.0</text>
-  </g>
-
-  <!-- Claude Code badge -->
-  <g transform="translate(530, 155)">
-    <rect width="120" height="24" rx="12" fill="#00000040"/>
-    <text x="60" y="16" font-family="'Courier New', monospace" font-size="11" fill="#FFD4D4" text-anchor="middle">Claude Code</text>
-  </g>
+  <rect x="710" y="142" width="56" height="22" rx="4" fill="none" stroke="#cc220040" stroke-width="1"/>
+  <text x="738" y="157" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="11" fill="#cc2200" text-anchor="middle">v1.0.0</text>
 </svg>
