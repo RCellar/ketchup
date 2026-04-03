@@ -4,6 +4,19 @@ All notable changes to the ketchup skill are documented here.
 
 ---
 
+## [1.1.1] - 2026-04-03
+
+### Added
+- **`--tgt` validation** — Rejects empty/whitespace-only values. Warns on >30 word topics that may need scoping.
+- **`--plugin` replacement warning** — When CLI `--plugin` overrides a config-file plugin list, the user is told what was replaced and how to combine both.
+- **Broad topic scope heuristic** — Defined when to ask the user to narrow (3+ unrelated subtopics) vs scope autonomously (related subtopics with a clear `--occ` lens).
+- **Tool name fragility note** in Plugin Registry — Documents that hardcoded MCP tool names can break if upstream plugins change namespace, and that discovery fallback handles it.
+
+### Changed
+- **Version bumped to 1.1.1** in `plugin.json` and `marketplace.json`. Marketplace consumers now see a version change signal.
+
+---
+
 ## [1.1.0] - 2026-04-03
 
 ### Added
