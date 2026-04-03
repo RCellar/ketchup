@@ -74,9 +74,36 @@ This tells ketchup: *"I'm a Windows sysadmin who hasn't been deep in the weeds f
 
 1. **Scope & decompose** — Breaks the topic into 2-6 facets tuned to what matters for a frontend dev learning Postgres (not a DBA learning Postgres — different facets entirely)
 2. **Plugin pre-fetch** — Orchestrator queries Context7 for current Postgres docs, tags results per facet
-3. **Parallel research** — One Sonnet agent per facet, each with your occupation context, staleness window, and pre-fetched docs
-4. **Validate & synthesize** — Citation audit, contradiction check, deduplicate, restore your perspective across all sections
-5. **Obsidian output** — Formatted report with frontmatter, callouts, Mermaid diagrams, and proper tags
+3. **Pass 1: Fact extraction (haiku)** — Cheap, fast agents collect raw facts, sources, and commands per facet via web search. No perspective shaping yet — just research.
+4. **Pass 2: Perspective shaping (sonnet)** — Each facet's raw research is reshaped for the reader's occupation and staleness window. No re-research — only reshaping Pass 1 output.
+5. **Validate & synthesize** — Citation audit, contradiction check, deduplicate, restore perspective across all sections
+6. **Obsidian output** — Formatted report with frontmatter, callouts, Mermaid diagrams, and proper tags
+7. **Verification (haiku)** — Independent agent checks frontmatter, section completeness, citation compliance, and confidence scoring before delivery
+
+### Cost Discipline
+
+Ketchup uses a two-pass research model to control agent costs:
+
+| Pass | Model | Purpose | Why this model |
+|------|-------|---------|----------------|
+| 1 — Fact extraction | **haiku** | Collect raw facts, sources, commands | Mechanical research — cheap and fast |
+| 2 — Perspective shaping | **sonnet** | Reshape facts for the reader | Requires judgment — worth the cost |
+| 2 (complex facets) | **opus** | Cross-domain synthesis | Only when facet covers >3 subtopics |
+| Verification | **haiku** | Structural + citation checks | Mechanical validation — no judgment needed |
+
+A dispatch table in the skill file governs model selection. The orchestrator consults it before every agent call — no ad-hoc escalation.
+
+### Confidence Scoring
+
+Every report gets a confidence grade based on citation density:
+
+| Grade | Threshold | Meaning |
+|-------|-----------|---------|
+| **high** | >70% sourced claims | Most facts have URLs |
+| **medium** | 40-70% sourced | Mixed sourcing |
+| **low** | <40% sourced | Mostly unsourced or inferred |
+
+The verification agent counts sourced vs unsourced vs inferred claims and sets the `confidence` field in frontmatter automatically.
 
 ## Perspective Shaping
 
