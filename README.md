@@ -163,18 +163,50 @@ plugins:
 | Disable staleness for one report | `--time 0` |
 | Use different plugins for one report | `--plugin "Other"` (replaces config list) |
 
-## Citation Standards
+## Cite and Tag
 
-Every ketchup report follows strict citation rules:
+Every ketchup report enforces a citation and tagging discipline defined in [`cite-and-tag.md`](skills/ketchup/cite-and-tag.md). The goal: no claim goes unattributed, no inference masquerades as fact, and every report is findable by topic.
 
-| Claim type | Format |
-|-----------|--------|
-| Fact with URL | Inline hyperlink: `claim ([source](url))` |
-| Fact, no URL | `_(unsourced)_` |
-| Inference | `_(~inferred: brief basis)_` |
-| Unverified link | `_(link unverified)_` |
+### Citation Rules
 
-No bare assertions. No "intuition." Every claim is sourced, flagged, or explicitly marked as inference.
+Every factual claim in a report must carry one of these markers:
+
+| Claim type | Format | Example |
+|-----------|--------|---------|
+| Fact with URL | Inline hyperlink | `SELinux uses MAC ([Red Hat docs](https://...))` |
+| Fact, no URL available | `_(unsourced)_` | `Pocket doors are common in tight spaces _(unsourced)_` |
+| Inference / probability | `_(~inferred: basis)_` | `This likely replaced the older module _(~inferred: pattern-match on changelog frequency)_` |
+| URL not verified | `_(link unverified)_` | `See the migration guide ([docs](https://...)) _(link unverified)_` |
+| Training data only (no search result) | Explicit flag | Marked so the reader knows it wasn't independently verified |
+
+**Hard rules:**
+- **No bare assertions.** If a claim has no marker, it's a bug in the report.
+- **No "intuition" language.** LLMs don't have intuition. Use "pattern-match," "aggregate likelihood," or "low-confidence extrapolation" instead.
+
+### Tagging
+
+Reports are tagged via **YAML frontmatter** — Obsidian's canonical, indexable tag location. Tags never appear as inline blockquotes.
+
+```yaml
+tags:
+  - ketchup
+  - selinux
+  - windows-sysadmin
+```
+
+**Tag rules:**
+- Descriptive, searchable terms — not generic labels like `misc` or `general`
+- Sanitized: lowercase, hyphens for spaces, cannot start with a number
+- Obsidian's search and Dataview index frontmatter tags reliably, making reports queryable across a vault
+
+### Enforcement
+
+Citation compliance isn't just guidance — it's enforced at multiple stages of the pipeline:
+
+1. **Subagent prompts** include the full citation ruleset inline
+2. **Self-reported counts** — each subagent reports "X sourced, Y unsourced, Z inferred" at the end of its output
+3. **Step 3a validation** — the orchestrator checks citation density before synthesis; facets with zero sourced citations are flagged as low-confidence
+4. **Step 3b audit** — bare assertions are scanned for and either sourced, marked, or reframed before the final report is written
 
 ## Output Format
 
@@ -183,7 +215,7 @@ Reports are Obsidian-flavored markdown with:
 - YAML frontmatter (`topic`, `perspective`, `date`, `confidence`, `source_count`, `tags`)
 - `> [!abstract]`, `> [!tip]`, `> [!warning]` callouts
 - Mermaid diagrams where helpful
-- Tags in frontmatter (not blockquotes) for proper Obsidian indexing
+- Tags in frontmatter for proper Obsidian search and Dataview indexing
 
 ## File Structure
 
