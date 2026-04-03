@@ -17,6 +17,9 @@ Research and report on technologies, skills, or concepts, shaped for the reader'
 | `--time` | Integer (years) | Knowledge staleness — years since last deep engagement | `--time 6` |
 | `--registry` | Subcommand | Manage plugin registry: `list`, `add <name>`, `remove <name>` | `--registry list` |
 | `--reset` | Flag (no value) | Clear session state (occ, time, plugins) mid-conversation | `--reset` |
+| `--fmt` | String (`obsidian` \| `notebook`) | Output format — default `obsidian` | `--fmt notebook` |
+| `--kernel` | String (`python` \| `bash`) | Kernelspec for notebook code cells — default `python` | `--kernel bash` |
+| `--annotate` | File path (`.ipynb`) | Reprocess a ketchup notebook for `%%ketchup` queries | `--annotate ./report.ipynb` |
 
 ### Parsing Rules
 
@@ -31,6 +34,11 @@ Research and report on technologies, skills, or concepts, shaped for the reader'
 9. **`--tgt` validation** — Must be a non-empty string. Reject empty/whitespace-only values: "No topic provided. Use `--tgt` with a topic string." If the value exceeds ~30 words, warn: "Topic is very broad — consider narrowing, or I'll scope it during decomposition."
 10. **`--plugin` replacement warning** — When `--plugin` on the CLI replaces a config-file plugin list, confirm what was replaced: "CLI `--plugin` overrides config. Using: {cli list}. Config had: {config list}. To use both, combine them: `--plugin 'Context7,Microsoft Docs'`."
 11. **`--reset`** — Clears session state (`--occ`, `--time`, active plugins) without restarting. Confirm: "Session state cleared. Set `--occ` to begin."
+12. **`--fmt` validation** — Accepts `obsidian` or `notebook`. Any other value: "Invalid `--fmt` value. Use `obsidian` or `notebook`." Default is `obsidian` if omitted.
+13. **`--kernel` validation** — Accepts `python` or `bash`. Any other value: "Invalid `--kernel` value. Use `python` or `bash`." Requires `--fmt notebook` — reject otherwise: "The `--kernel` flag requires `--fmt notebook`." Default is `python` if omitted.
+14. **`--annotate` validation** — Path must end in `.ipynb`: "The `--annotate` flag requires a `.ipynb` file path." Standalone mode — reject if combined with `--tgt` or `--occ`: "The `--annotate` flag is a standalone mode — do not combine with `--tgt` or `--occ`."
+15. **`--fmt` not stored** — Like `--tgt`, `--fmt` is always per-invocation. Never stored in `.ketchup` config.
+16. **`--kernel` in config** — May be stored in `.ketchup` config under the `kernel` key. CLI `--kernel` overrides config.
 
 ## `.ketchup` Config File
 
