@@ -172,12 +172,17 @@ Prefer fewer, deeper facets over many shallow ones. Bias toward facets that answ
 
 If no plugins are active (no `--plugin`, no config), skip this step entirely.
 
+**Discovery-first resolution** — tool names vary across environments (Claude Code, claude.ai, Copilot, etc.), so always resolve tools at runtime:
+
 For each active plugin:
 1. Normalize the plugin name (lowercase, trim whitespace, replace spaces with hyphens)
-2. Look up in plugin registry (check in order: `<project>/.ketchup-plugins.yaml`, then `~/.ketchup-plugins.yaml`, then the shipped `plugin-registry.yaml`)
-3. If found: execute the workflow steps in order, collecting results. Call with per-facet focused query strings (e.g., "SELinux policy types" not just "SELinux").
-4. If not found: **discovery fallback** — scan available MCP tools for names containing the normalized string. Read MCP server instructions from system prompt. Construct best-effort workflow. Warn: "No registry entry for '{name}' — discovered MCP tools matching '{pattern}'. Attempting best-effort prefetch."
-5. If discovery finds nothing: warn and skip: "No MCP tools found matching '{name}'. Proceeding without this plugin."
+2. **Discover available tools** — scan all available MCP tools for names containing the normalized plugin name (e.g., `"context7"` matches any tool with `context7` in its name, regardless of prefix). This works across all environments.
+3. **Match workflow from registry** — look up in plugin registry (check in order: `<project>/.ketchup-plugins.yaml`, then `~/.ketchup-plugins.yaml`, then the shipped `plugin-registry.yaml`). If found, use the registry's `workflow` entries to determine the order and purpose of tool calls. Each workflow entry has a `hint` (a substring to match against discovered tool names) and an `action` (what the tool call accomplishes). For each workflow step, find the discovered tool whose name contains the `hint` substring.
+4. If registry entry found but a `hint` matches no discovered tool: skip that workflow step with a warning. If ALL hints fail, fall through to best-effort (step 5).
+5. If no registry entry exists: **best-effort fallback** — use the discovered tools directly. Read MCP server instructions from the system prompt to determine call order and parameters. Warn: "No registry entry for '{name}' — discovered {N} MCP tools matching '{pattern}'. Attempting best-effort prefetch."
+6. If discovery finds no tools at all: warn and skip: "No MCP tools found matching '{name}'. Proceeding without this plugin."
+
+Call with per-facet focused query strings (e.g., "SELinux policy types" not just "SELinux").
 
 Tag each plugin's results with its name for subagent citation.
 
@@ -391,7 +396,7 @@ After marketplace install, the shipped registry lands at `~/.claude/plugins/cach
 
 **Match field semantics:** The `match` field uses **substring matching** against the normalized plugin name. `"microsoft"` matches input `"microsoft-docs"`, `"microsoft"`, etc. Matching is case-insensitive after normalization.
 
-**Tool name fragility:** The `tool` fields in workflow entries are hardcoded MCP tool names (e.g., `mcp__plugin_context7_context7__query-docs`). These names are derived from the MCP plugin's namespace at install time. If an upstream plugin installs under a different namespace, the registry entry will fail to match and fall through to the discovery fallback. The discovery fallback handles this gracefully, but if you notice a registered plugin consistently falling through, update its `tool` names via `--registry add` to match the actual installed namespace.
+**Hint-based tool resolution:** Workflow entries use a `hint` field (a short substring like `"query-docs"`) instead of full tool names. At runtime, the hint is matched against the actual MCP tools discovered in the session. This makes registry entries portable across environments — the same hint works whether the tool is named `mcp__plugin_context7_context7__query-docs` (Claude Code) or `context7_query-docs` (claude.ai) or any other platform-specific prefix.
 
 **Format:**
 
@@ -401,9 +406,9 @@ plugins:
     match: "context7"
     description: "Current documentation for libraries, frameworks, and SDKs"
     workflow:
-      - tool: "mcp__plugin_context7_context7__resolve-library-id"
+      - hint: "resolve-library-id"
         action: "Resolve topic to library ID"
-      - tool: "mcp__plugin_context7_context7__query-docs"
+      - hint: "query-docs"
         action: "Query per-facet with focused strings"
 ```
 
@@ -412,10 +417,10 @@ plugins:
 | Command | Action |
 |---------|--------|
 | `--registry list` | Show all registered plugins (project + user + shipped) with source file |
-| `--registry add <name>` | Prompt for match pattern, description, and workflow steps. Write to project-level `.ketchup-plugins.yaml` by default; `--global` writes to `~/.ketchup-plugins.yaml` |
+| `--registry add <name>` | Prompt for match pattern, description, and workflow steps (hint + action pairs). Write to project-level `.ketchup-plugins.yaml` by default; `--global` writes to `~/.ketchup-plugins.yaml` |
 | `--registry remove <name>` | Remove from project-level file (or `--global` for `~/.ketchup-plugins.yaml`) |
 
-When `--registry add` prompts for workflow steps, list the available MCP tools from the current session to help the user select the right ones. If no MCP tools are available, the user can manually enter tool names (they can find these later when MCP servers are configured).
+When `--registry add` prompts for workflow steps, list the available MCP tools from the current session to help the user identify the right hints. Extract the unique suffix from each tool name (e.g., `mcp__plugin_context7_context7__query-docs` → hint `"query-docs"`). If no MCP tools are available, the user can manually enter hint strings (they can find these later when MCP servers are configured).
 
 ## Cite-and-Tag (Always Active)
 
@@ -433,6 +438,7 @@ All ketchup outputs follow cite-and-tag rules defined in `cite-and-tag.md` in th
 | Monolithic single-agent research | Use parallel subagents — breadth AND depth |
 | Raw subagent output without synthesis | Always validate, deduplicate, and bridge across facets |
 | Instructing subagents to use MCP tools | Subagents can't access MCP. Pre-fetch in Step 1.5 instead. |
+| Using full tool names in registry `hint` fields | Hints are substrings (e.g., `"query-docs"`), not full names. Full names break cross-platform. |
 | Ignoring subagent failures | Validate output before synthesis. Re-research empty/weak facets. |
 | Tags outside YAML frontmatter | Use frontmatter `tags:` list — Obsidian's canonical, indexable tag location |
 | Passing full `--tgt` as plugin query | Use per-facet focused query strings for better results |
