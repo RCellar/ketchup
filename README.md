@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Ketchup on anything, like it should be.</strong><br/>
+  <strong>Ketchup on Everything.</strong><br/>
   A Claude Code skill that generates in-depth technical research reports<br/>
   shaped for your professional background.
 </p>
