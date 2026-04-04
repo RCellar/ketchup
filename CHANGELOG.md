@@ -4,6 +4,17 @@ All notable changes to the ketchup skill are documented here.
 
 ---
 
+## [1.1.2] - 2026-04-04
+
+### Changed
+- **Discovery-first tool resolution** — Plugin pre-fetch no longer relies on hardcoded MCP tool names. Registry workflow entries now use `hint` (a short substring like `"query-docs"`) instead of `tool` (a full platform-specific name like `mcp__plugin_context7_context7__query-docs`). At runtime, hints are matched against tools discovered in the session, making plugins portable across Claude Code, claude.ai, and other environments.
+- **Plugin registry format** — `tool` field renamed to `hint` in `plugin-registry.yaml` and all registry documentation. Existing user registries using `tool` will fall through to the best-effort discovery fallback (no breakage, just a warning).
+
+### Fixed
+- **Plugin pre-fetch fails on claude.ai** — MCP tools on claude.ai use different naming conventions than Claude Code. The old hardcoded tool names couldn't resolve, silently skipping plugin data. Discovery-first resolution fixes this for all platforms.
+
+---
+
 ## [1.1.1] - 2026-04-03
 
 ### Added

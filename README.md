@@ -115,7 +115,7 @@ Ketchup reads the perspective, plugins, and topic from the notebook's metadata (
 ```
 
 1. **Scope & decompose** — Breaks the topic into 2-6 facets tuned to what matters for a frontend dev learning Postgres (not a DBA learning Postgres — different facets entirely)
-2. **Plugin pre-fetch** — Orchestrator queries Context7 for current Postgres docs, tags results per facet
+2. **Plugin pre-fetch** — Orchestrator discovers MCP tools at runtime by name, matches them to registry workflow hints, and queries Context7 for current Postgres docs per facet
 3. **Pass 1: Fact extraction (haiku)** — Cheap, fast agents collect raw facts, sources, and commands per facet via web search. No perspective shaping yet — just research.
 4. **Pass 2: Perspective shaping (sonnet)** — Each facet's raw research is reshaped for the reader's occupation and staleness window. No re-research — only reshaping Pass 1 output.
 5. **Validate & synthesize** — Citation audit, contradiction check, deduplicate, restore perspective across all sections
